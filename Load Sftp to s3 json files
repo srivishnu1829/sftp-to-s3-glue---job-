@@ -21,9 +21,9 @@ port = 22
 username = 'acasnsc'
 password = '1243980824'
 
-key_name = 'nano_sftp/nano-sftp__com_key'
+key_name = 'pemkey'
 
-keyfile_path = 's3://cp-prod-dwh-assets/nano_s_com_key.pem'
+keyfile_path = 's3://aa.pem'
 s3_client = boto3.client('s3')
 # GB = 1024 ** 0
 # config = TransferConfig(multipart_threshold=1*GB)
@@ -34,36 +34,12 @@ today = date.today()
 # dd/mm/YY
 dateKey = today.strftime("%Y%m%d")
 print("dateKey =", dateKey)
-tarFileName="mndb-prod_"+dateKey+"_011001.tgz"
-bucket_name = "cp-prod-"
+tarFileName="m-prod_"+dateKey+"_011001.tgz"
+bucket_name = "-prod-"
 
 
 key_content="""-----BEGIN RSA PRIVATE KEY-----
-MIIEpAIBAAKCAQEAzRaUM+E4xY2Y2KnvsVhcQoCXdQRajTV2qvcW/xVcZhkhcQ5X
-Rv0MuSa04ag2nn5RjaAFcAk4iHBghDwo5eACU50pOaTfs1cfvE5HdUYM28d4YIsC
-TvtBQ6jDloiqIvxtydSnzBf0RaVYoGOSJnpXP8almrFT9XsrBZTqUBI3AWh186E6
-hnxQghFkZa8IiVzmBcbE/gKOuze/Z9A0SztrAbiWTwGzXEJa4lZvr90zgULV11lv
-x6oqI2BPKV2riGnKCS4T6rUmSL/0sMFJweHLxzJozJIp6lZv4+nDTWxt1zsjgSjo
-2F01arMwcLWk/COzSnZyVGTMYeSEQt4rkYxfjQIDAQABAoIBAQCAKzUxevZc19IG
-zaUDYyI9WVnOAouIpjnkPIk9nx7gm6H/oqO+tJRH/b2bLOH9iRn0dWYQj2KqOfjH
-i0VP6//oO1axNK2sya0GpLEZxE5y56T+SMGHlJRD8WtSX1Rciv8d3G2FKg85m0zY
-54FF1L1EGSQTmfDLgE7xrRAGPGvtzziCGiVE1AL2tHPLfibij+g4vn4hQhYqCFcr
-uMqCMP348BGoGBhTL6W6rAZuL7up7paNRelRaUm7TPN8JL3kHvU7J2cZDDsc8GCs
-pfRtjdoiCPksaaU+rOLBSwbcgaGS5L5vHRMYfhnDYr0VPgGHXn3t0fe/mYWmYXso
-6UJHW9aBAoGBAPaxI5WP/q2e/pkJ8uLRWB7GDWExi/pkUr/kibtk9g75sgGUIp5t
-EuWgJvxLwPgC5HxSypGH5GMIFQxc7fKhj8XoIJzCOuGgAiozBsLZfKboGiAxZx1B
-nV+R2ONuaFAI9vKrfwpTdiqVxdrYDjLuv9gP5+tcq4SfWVqJ5wl5EWytAoGBANTT
-lB5kAnDo/XCO65eanI89oc7CETz2qmLjcFYdpZjGE62f4JKxF/AnLbzLjE9vR0OC
-xH5PDrHYWoNtfy3vqmxGBr6hGM3GPY8a+UTDI/9ZxZ0fVdE1frG8zmzHNHtiYajc
-8TEfJNH7FT8x3WA62xNjHEC3GTxcFdUOwBJb/zphAoGAANnHh6KBfFPKCPkRz1pt
-dV21ehpToz9pUaQWHYFRn+eYh4zdObKimAwfVktklPZdl1gpvqq7TOQgPnSrlWSd
-PE96nU/GKDUHDOI0KcPaPDEctfO1qVIqmsPD/bTJw0zknR2eSIjVJXxyvDh2hBJy
-suoLILKnHMP36OoE0/GI79kCgYEAxDqYlTTM82I/W2rLWisaMxA2grZ4wmcETs05
-pI0NREFNn4aLv3U9hxX4m9xpcEw/vsVxeqxV9jBvtEJfQvF5hv9B9L4Aaqpf0/Sg
-5H+wTx5skCR2McFLIYHeKnm5sBHTzah5UjtO7bS9sFi/rpxVphh50kmAISEemCVT
-fxoHx8ECgYANLoMHRNxkaVXJm4hf0sS+5WMNP7vXaJaUVkoqC93GPptVxTRay8Au
-pYEKLTsVuEMufuc2zr8GDpRqG+8QI192Rr7lxzD9/kFo2wEZ5Ro9bR+sdpC3odWe
-R1CnuVd7cdDzfp3BV/LVnOZIzkYMb3DOE/p8atP2hFQ6lvFphH2D8w==
+MIIEpAI
 -----END RSA PRIVATE KEY-----"""
 
 print(key_content)

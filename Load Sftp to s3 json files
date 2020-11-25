@@ -1,0 +1,132 @@
+nano sftp code
+---------------------------
+from __future__ import print_function
+import os
+import stat
+import math
+import json
+import time
+from datetime import date
+import io
+from io import BytesIO
+from io import StringIO
+import boto3
+import botocore
+import paramiko
+import tarfile
+from boto3.s3.transfer import TransferConfig
+
+host = 'nano-sftp.ccncncncn.com'
+port = 22
+username = 'acasnsc'
+password = '1243980824'
+
+key_name = 'nano_sftp/nano-sftp__com_key'
+
+keyfile_path = 's3://cp-prod-dwh-assets/nano_s_com_key.pem'
+s3_client = boto3.client('s3')
+# GB = 1024 ** 0
+# config = TransferConfig(multipart_threshold=1*GB)
+
+config = TransferConfig(multipart_threshold=1024 / 25, max_concurrency=10,multipart_chunksize=1024 / 25, use_threads=True)
+
+today = date.today()
+# dd/mm/YY
+dateKey = today.strftime("%Y%m%d")
+print("dateKey =", dateKey)
+tarFileName="mndb-prod_"+dateKey+"_011001.tgz"
+bucket_name = "cp-prod-"
+
+
+key_content="""-----BEGIN RSA PRIVATE KEY-----
+MIIEpAIBAAKCAQEAzRaUM+E4xY2Y2KnvsVhcQoCXdQRajTV2qvcW/xVcZhkhcQ5X
+Rv0MuSa04ag2nn5RjaAFcAk4iHBghDwo5eACU50pOaTfs1cfvE5HdUYM28d4YIsC
+TvtBQ6jDloiqIvxtydSnzBf0RaVYoGOSJnpXP8almrFT9XsrBZTqUBI3AWh186E6
+hnxQghFkZa8IiVzmBcbE/gKOuze/Z9A0SztrAbiWTwGzXEJa4lZvr90zgULV11lv
+x6oqI2BPKV2riGnKCS4T6rUmSL/0sMFJweHLxzJozJIp6lZv4+nDTWxt1zsjgSjo
+2F01arMwcLWk/COzSnZyVGTMYeSEQt4rkYxfjQIDAQABAoIBAQCAKzUxevZc19IG
+zaUDYyI9WVnOAouIpjnkPIk9nx7gm6H/oqO+tJRH/b2bLOH9iRn0dWYQj2KqOfjH
+i0VP6//oO1axNK2sya0GpLEZxE5y56T+SMGHlJRD8WtSX1Rciv8d3G2FKg85m0zY
+54FF1L1EGSQTmfDLgE7xrRAGPGvtzziCGiVE1AL2tHPLfibij+g4vn4hQhYqCFcr
+uMqCMP348BGoGBhTL6W6rAZuL7up7paNRelRaUm7TPN8JL3kHvU7J2cZDDsc8GCs
+pfRtjdoiCPksaaU+rOLBSwbcgaGS5L5vHRMYfhnDYr0VPgGHXn3t0fe/mYWmYXso
+6UJHW9aBAoGBAPaxI5WP/q2e/pkJ8uLRWB7GDWExi/pkUr/kibtk9g75sgGUIp5t
+EuWgJvxLwPgC5HxSypGH5GMIFQxc7fKhj8XoIJzCOuGgAiozBsLZfKboGiAxZx1B
+nV+R2ONuaFAI9vKrfwpTdiqVxdrYDjLuv9gP5+tcq4SfWVqJ5wl5EWytAoGBANTT
+lB5kAnDo/XCO65eanI89oc7CETz2qmLjcFYdpZjGE62f4JKxF/AnLbzLjE9vR0OC
+xH5PDrHYWoNtfy3vqmxGBr6hGM3GPY8a+UTDI/9ZxZ0fVdE1frG8zmzHNHtiYajc
+8TEfJNH7FT8x3WA62xNjHEC3GTxcFdUOwBJb/zphAoGAANnHh6KBfFPKCPkRz1pt
+dV21ehpToz9pUaQWHYFRn+eYh4zdObKimAwfVktklPZdl1gpvqq7TOQgPnSrlWSd
+PE96nU/GKDUHDOI0KcPaPDEctfO1qVIqmsPD/bTJw0zknR2eSIjVJXxyvDh2hBJy
+suoLILKnHMP36OoE0/GI79kCgYEAxDqYlTTM82I/W2rLWisaMxA2grZ4wmcETs05
+pI0NREFNn4aLv3U9hxX4m9xpcEw/vsVxeqxV9jBvtEJfQvF5hv9B9L4Aaqpf0/Sg
+5H+wTx5skCR2McFLIYHeKnm5sBHTzah5UjtO7bS9sFi/rpxVphh50kmAISEemCVT
+fxoHx8ECgYANLoMHRNxkaVXJm4hf0sS+5WMNP7vXaJaUVkoqC93GPptVxTRay8Au
+pYEKLTsVuEMufuc2zr8GDpRqG+8QI192Rr7lxzD9/kFo2wEZ5Ro9bR+sdpC3odWe
+R1CnuVd7cdDzfp3BV/LVnOZIzkYMb3DOE/p8atP2hFQ6lvFphH2D8w==
+-----END RSA PRIVATE KEY-----"""
+
+print(key_content)
+
+
+def create_sftp_client(host, port, username, password, keyfilepath, keyfiletype, keyfileContent):
+    print("Trying to connected to sftpclient")
+    ssh = None
+    sftp = None
+    key = None
+    try:
+        if keyfilepath is not None:
+            if keyfiletype == 'DSA':
+                key = paramiko.DSSKey.from_private_key_file(keyfilepath)
+            else:
+                key = paramiko.RSAKey.from_private_key(io.StringIO(keyfileContent))
+ 
+        # Connect SSH client accepting all host keys.
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(host, port, username, password, key)
+        
+        # Using the SSH client, create a SFTP client.
+        sftp = ssh.open_sftp()
+        # Keep a reference to the SSH client in the SFTP client as to prevent the former from
+        # being garbage collected and the connection from being closed.
+        sftp.sshclient = ssh
+        print("##Successfully connected to sftpclient :-",sftp)
+        return sftp
+    except Exception as e:
+        print('An error occurred creating SFTP client: %s: %s' % (e.__class__, e))
+        if sftp is not None:
+            sftp.close()
+        if ssh is not None:
+            ssh.close()
+        pass
+    
+sftpclient=create_sftp_client(host, port, username, password, keyfile_path, 'RSA',key_content)
+print("##::::::::::::::::::::::::::::::::::##")
+
+
+def move_nanofile_s3(sftp):
+    print("##Pull nano file from sftp process START##")
+    files = sftp.listdir()
+    print(files)
+    sftp.chdir("prod")
+    try:
+        if sftp.listdir ==0:
+            print("Empty directory")
+        else:
+            print("data directory present")
+            print(sftp.listdir())
+            ftp_file = sftp.file(tarFileName,'r')
+            print("Read File and start saving to s3")
+            s3_client.upload_fileobj(ftp_file, Bucket=bucket_name, Key=str(tarFileName),Config=config)
+        #    s3_client.multipart_uploads(ftp_file, Bucket=bucket_name, Key=str(tarFileName))
+            #s3_client.upload_file(ftp_file, Bucket=bucket_name, Key=str(tarFileName),Config=config)
+            #response = client.create_multipart_upload(
+    except Exception as e:
+        print('Failed: '+ str(e))
+    print("##Pull nano file from sftp process END##")
+    sftp.close()
+
+if sftpclient is not None:
+    move_nanofile_s3(sftpclient)
+print("##::::::::::::::::::::::::::::::::::##")
